@@ -46,7 +46,7 @@ namespace Microsoft.Identity.Client
         }
 
         async Task ITokenCacheInternal.OnBeforeAccessAsync(TokenCacheNotificationArgs args)
-        {
+        {            
             BeforeAccess?.Invoke(args);
             if (AsyncBeforeAccess != null)
             {

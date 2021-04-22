@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -122,6 +123,7 @@ namespace Microsoft.Identity.Client
                     username,
                     instanceDiscoveryMetadata.PreferredNetwork, 
                     wamAccountIds);
+            var stopwatch = new Stopwatch();
 
             await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
             try
@@ -144,8 +146,10 @@ namespace Microsoft.Identity.Client
                             hasTokens: tokenCacheInternal.HasTokensNoLocks(),
                             suggestedCacheKey: suggestedWebCacheKey);
 
+                        stopwatch.Start();
                         await tokenCacheInternal.OnBeforeAccessAsync(args).ConfigureAwait(false);
                         await tokenCacheInternal.OnBeforeWriteAsync(args).ConfigureAwait(false);
+                        requestParams.RequestContext.ApiEvent.TimeSpentInCache += stopwatch.ElapsedMilliseconds;
                     }
 
                     if (msalAccessTokenCacheItem != null)
@@ -214,7 +218,11 @@ namespace Microsoft.Identity.Client
                             tokenCacheInternal.HasTokensNoLocks(),
                             suggestedCacheKey: suggestedWebCacheKey);
 
+                        stopwatch.Reset();
+                        stopwatch.Start();                        
                         await tokenCacheInternal.OnAfterAccessAsync(args).ConfigureAwait(false);
+                        requestParams.RequestContext.ApiEvent.TimeSpentInCache += stopwatch.ElapsedMilliseconds;
+
                     }
 #pragma warning disable CS0618 // Type or member is obsolete
                     HasStateChanged = false;

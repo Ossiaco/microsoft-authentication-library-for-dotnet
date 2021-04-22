@@ -156,6 +156,7 @@ namespace Microsoft.Identity.Client
         private async Task<IEnumerable<IAccount>> GetAccountsInternalAsync(ApiIds apiId, string homeAccountIdFilter = null)
         {
             RequestContext requestContext = CreateRequestContext(Guid.NewGuid());
+            requestContext.ApiEvent = new ApiEvent
 
             var authority = Microsoft.Identity.Client.Instance.Authority.CreateAuthorityForRequest(
               requestContext.ServiceBundle.Config.AuthorityInfo,

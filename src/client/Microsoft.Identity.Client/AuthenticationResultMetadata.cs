@@ -22,5 +22,20 @@ namespace Microsoft.Identity.Client
         /// The source of the token in the result.
         /// </summary>
         public TokenSource TokenSource { get; }
+
+        /// <summary>
+        /// Total time spent to service this request. Includes TimeInHttp and TimeInCache. All times in ms.
+        /// </summary>
+        public long TimeInTotal { get; set; }
+
+        /// <summary>
+        /// Time spent in the cache to service the request
+        /// </summary>
+        public long TimeInCache { get; set; }
+
+        /// <summary>
+        /// Time spent for HTTP communication
+        /// </summary>
+        public long TimeInHttp { get; set; }
     }
 }

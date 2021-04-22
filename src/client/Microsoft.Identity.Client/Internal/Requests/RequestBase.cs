@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Identity.Client.TelemetryCore.Internal.Events;
 using Microsoft.Identity.Client.Instance.Discovery;
 using Microsoft.Identity.Client.Cache.Items;
+using System.Diagnostics;
 
 namespace Microsoft.Identity.Client.Internal.Requests
 {
@@ -103,9 +104,11 @@ namespace Microsoft.Identity.Client.Internal.Requests
 
         public async Task<AuthenticationResult> RunAsync(CancellationToken cancellationToken = default)
         {
-            ApiEvent apiEvent = InitializeApiEvent(AuthenticationRequestParameters.Account?.HomeAccountId?.Identifier);
-            AuthenticationRequestParameters.RequestContext.ApiEvent = apiEvent;
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
 
+            ApiEvent apiEvent = InitializeApiEvent(AuthenticationRequestParameters.Account?.HomeAccountId?.Identifier);
+            AuthenticationRequestParameters.RequestContext.ApiEvent = apiEvent;            
             try
             {
                 using (AuthenticationRequestParameters.RequestContext.CreateTelemetryHelper(apiEvent))
@@ -121,6 +124,11 @@ namespace Microsoft.Identity.Client.Internal.Requests
                         apiEvent.TenantId = authenticationResult.TenantId;
                         apiEvent.AccountId = authenticationResult.UniqueId;
                         apiEvent.WasSuccessful = true;
+
+                        authenticationResult.AuthenticationResultMetadata.TimeInTotal = sw.ElapsedMilliseconds;
+                        authenticationResult.AuthenticationResultMetadata.TimeInHttp = apiEvent.TimeSpentInHttp;
+                        authenticationResult.AuthenticationResultMetadata.TimeInTotal = apiEvent.TimeSpentInCache;
+
                         return authenticationResult;
                     }
                     catch (MsalException ex)

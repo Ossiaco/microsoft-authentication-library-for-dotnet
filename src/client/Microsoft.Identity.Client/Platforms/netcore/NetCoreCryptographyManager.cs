@@ -67,6 +67,7 @@ namespace Microsoft.Identity.Client.Platforms.netcore
         /// <inheritdoc />
         public byte[] SignWithCertificate(string message, X509Certificate2 certificate)
         {
+            
             if (certificate.PublicKey.Key.KeySize < ClientCredentialWrapper.MinKeySizeInBits)
             {
                 throw new ArgumentOutOfRangeException(nameof(certificate),

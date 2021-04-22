@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client.Cache.Items;
 using Microsoft.Identity.Client.Cache.Keys;
@@ -104,7 +105,7 @@ namespace Microsoft.Identity.Client.Cache
                     };
 
                     await TokenCacheInternal.Semaphore.WaitAsync().ConfigureAwait(false);
-
+                    Stopwatch stopwatch = new Stopwatch();
                     try
                     {
                         if (!_cacheRefreshedForRead) // double check locking
@@ -123,7 +124,10 @@ namespace Microsoft.Identity.Client.Cache
                                        TokenCacheInternal.IsApplicationCache,
                                        hasTokens: TokenCacheInternal.HasTokensNoLocks(),
                                        suggestedCacheKey: key);
+
+                                    stopwatch.Start();
                                     await TokenCacheInternal.OnBeforeAccessAsync(args).ConfigureAwait(false);
+                                    RequestContext.ApiEvent.TimeSpentInCache += stopwatch.ElapsedMilliseconds;                                    
                                 }
                                 finally
                                 {
@@ -135,7 +139,12 @@ namespace Microsoft.Identity.Client.Cache
                                        TokenCacheInternal.IsApplicationCache,
                                        hasTokens: TokenCacheInternal.HasTokensNoLocks(),
                                        suggestedCacheKey: key);
+
+                                    stopwatch.Reset();
+                                    stopwatch.Start();
                                     await TokenCacheInternal.OnAfterAccessAsync(args).ConfigureAwait(false);
+                                    RequestContext.ApiEvent.TimeSpentInCache += stopwatch.ElapsedMilliseconds;
+
                                 }
 
                                 _cacheRefreshedForRead = true;
